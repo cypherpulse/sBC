@@ -1,0 +1,22 @@
+{
+  "name": "fungible-token",
+  "version": "2.0.0",
+  "description": "fungible token smart contract example",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run -- --manifest-path ./Clarinet.toml",
+    "test:reports": "vitest run -- --coverage --costs",
+    "test:watch": "chokidar \"unit-tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm t\""
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@stacks/clarinet-sdk": "^3.10.0",
+    "@stacks/transactions": "^7.0.6",
+    "@types/node": "^22.15.17",
+    "chokidar-cli": "^3.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^4.0.9",
+    "vitest-environment-clarinet": "^3.0.2"
+  }
+}
