@@ -1,0 +1,27 @@
+[project]
+name = 'bradley-coin'
+description = 'Demonstrates a basic fungible token that conforms to the SIP-010 FT standard'
+authors = []
+telemetry = true
+cache_dir = './.cache'
+
+[[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
+
+[contracts.bradley-coin]
+path = 'contracts/bradley-coin.clar'
+clarity_version = 4
+epoch = "latest"
+
+[contracts.fungible-token]
+path = 'contracts/fungible-token.clar'
+clarity_version = 4
+epoch = "latest"
+
+[contracts.defiv2]
+path = 'contracts/extern/defi.clar'
+clarity_version = 4
+epoch = "latest"
+
+
+
