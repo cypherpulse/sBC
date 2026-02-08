@@ -1,0 +1,43 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - requirement-publish:
+            contract-id: SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard
+            remap-sender: STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y
+            remap-principals:
+              SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE: STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y
+            cost: 8400
+            path: "./.cache/requirements/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.clar"
+            clarity-version: 1
+      epoch: "2.0"
+    - id: 1
+      transactions:
+        - contract-publish:
+            contract-name: bradley-coin
+            expected-sender: STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y
+            cost: 23660
+            path: contracts/bradley-coin.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: defiv2
+            expected-sender: STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y
+            cost: 6530
+            path: contracts/extern/defi.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: fungible-token
+            expected-sender: STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y
+            cost: 23660
+            path: contracts/fungible-token.clar
+            anchor-block-only: true
+            clarity-version: 4
+      epoch: "3.3"
