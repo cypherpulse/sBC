@@ -1,0 +1,32 @@
+---
+id: 0
+name: Mainnet deployment
+network: mainnet
+stacks-node: "https://api.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoin.blockstack.com:8332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: bradley-coin
+            expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
+            cost: 23660
+            path: contracts/bradley-coin.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: defiv2
+            expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
+            cost: 6530
+            path: contracts/extern/defi.clar
+            anchor-block-only: true
+            clarity-version: 4
+        - contract-publish:
+            contract-name: fungible-token
+            expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
+            cost: 23660
+            path: contracts/fungible-token.clar
+            anchor-block-only: true
+            clarity-version: 4
+      epoch: "3.3"
