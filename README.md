@@ -99,6 +99,16 @@ graph TD
 
 The contract has been successfully deployed to both testnet and mainnet.
 
+### Deployed Contracts
+- **Mainnet**:
+  - Bradley Coin: [SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.bradley-coin](https://explorer.stacks.co/txid/SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.bradley-coin?chain=mainnet)
+  - DeFi Helper: [SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.defiv2](https://explorer.stacks.co/txid/SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.defiv2?chain=mainnet)
+  - Fungible Token (Old): [SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.fungible-token](https://explorer.stacks.co/txid/SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B.fungible-token?chain=mainnet)
+- **Testnet**:
+  - Bradley Coin: [STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.bradley-coin](https://explorer.stacks.co/txid/STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.bradley-coin?chain=testnet)
+  - DeFi Helper: [STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.defiv2](https://explorer.stacks.co/txid/STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.defiv2?chain=testnet)
+  - Fungible Token (Old): [STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.fungible-token](https://explorer.stacks.co/txid/STGDS0Y17973EN5TCHNHGJJ9B31XWQ5YXBQ0KQ2Y.fungible-token?chain=testnet)
+
 ### Prerequisites
 - [Clarinet](https://docs.hiro.so/stacks/clarinet) installed.
 - Stacks account with STX for fees.
