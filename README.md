@@ -18,6 +18,7 @@ A SIP-010 compliant fungible token on the Stacks blockchain, named "Bradley Coin
     - [Public Functions](#public-functions)
     - [Error Codes](#error-codes)
   - [Deployment](#deployment)
+    - [Deployed Contracts](#deployed-contracts)
     - [Prerequisites](#prerequisites)
     - [Steps](#steps)
   - [Testing](#testing)
