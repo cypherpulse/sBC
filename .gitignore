@@ -11,3 +11,53 @@ costs-reports.json
 node_modules
 
 *.ps1
+
+*.sh
+
+# Sensitive dapp and project files
+# Ignore environment, secrets, and build artifacts
+
+dapp/.env
+dapp/.env.*
+dapp/node_modules/
+dapp/dist/
+dapp/.next/
+dapp/.cache/
+dapp/.DS_Store
+dapp/coverage/
+dapp/.turbo/
+dapp/.vercel/
+dapp/.output/
+dapp/.firebase/
+dapp/firebase-debug.log
+dapp/firebase-error.log
+
+# General sensitive files
+.env
+.env.*
+.DS_Store
+.cache/
+*.secret*
+*.key
+*.pem
+*.p12
+*.crt
+*.cert
+*.bak
+*.swp
+*.swo
+*.tmp
+*.log
+
+# Ignore local test and deployment settings
+settings/*.toml
+!settings/Devnet.toml
+
+# Ignore Clarinet and build artifacts
+.cache/
+clarinet.log
+clarinet.db
+
+# Ignore VSCode and OS files
+.vscode/
+Thumbs.db
