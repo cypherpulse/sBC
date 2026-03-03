@@ -1,0 +1,39 @@
+{
+  "name": "Bradley Token",
+  "symbol": "sBC",
+  "description": "Bradley Token (sBC) is a SIP-010 compliant fungible token on the Stacks blockchain. Minting requires 1 STX per full token, sent directly to the deployer, creating real economic value and backing for the token. Use it for community rewards, payments, or whatever you build next!",
+  "image": "https://res.cloudinary.com/dg5rr4ntw/image/upload/v1772567233/favicon_kxcesl.svg",
+  "image_uri": "https://res.cloudinary.com/dg5rr4ntw/image/upload/v1772567233/favicon_kxcesl.svg",
+  "image_canonical_uri": "https://res.cloudinary.com/dg5rr4ntw/image/upload/v1772567233/favicon_kxcesl.svg",
+  "decimals": 6,
+  "attributes": [
+    {
+      "trait_type": "Mint Price",
+      "value": "1 STX per token"
+    },
+    {
+      "trait_type": "Max Supply",
+      "value": "1,000,000 sBC"
+    },
+    {
+      "trait_type": "Blockchain",
+      "value": "Stacks"
+    }
+  ],
+  "external_url": "https://your-website.com/bradley-token",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://res.cloudinary.com/dg5rr4ntw/image/upload/v1772567233/sbc-logo-512.png",
+        "mimeType": "image/png"
+      }
+    ],
+    "category": "token",
+    "creators": [
+      {
+        "address": "SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B",
+        "share": 100
+      }
+    ]
+  }
+}
