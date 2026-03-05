@@ -9,24 +9,10 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: bradley-coin
+            contract-name: bradley-coin-v2
             expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
-            cost: 23660
-            path: contracts/bradley-coin.clar
-            anchor-block-only: true
-            clarity-version: 4
-        - contract-publish:
-            contract-name: defiv2
-            expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
-            cost: 6530
-            path: contracts/extern/defi.clar
-            anchor-block-only: true
-            clarity-version: 4
-        - contract-publish:
-            contract-name: fungible-token
-            expected-sender: SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B
-            cost: 23660
-            path: contracts/fungible-token.clar
+            cost: 26980
+            path: contracts/bradley-token.clar
             anchor-block-only: true
             clarity-version: 4
       epoch: "3.3"

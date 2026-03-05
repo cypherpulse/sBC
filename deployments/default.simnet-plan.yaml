@@ -72,13 +72,8 @@ plan:
     - id: 1
       transactions:
         - emulated-contract-publish:
-            contract-name: defi
+            contract-name: bradley-token
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/extern/defi.clar
-            clarity-version: 4
-        - emulated-contract-publish:
-            contract-name: fungible-token
-            emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/bradley-coin.clar
+            path: contracts/bradley-token.clar
             clarity-version: 4
       epoch: "3.3"

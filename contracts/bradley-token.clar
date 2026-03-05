@@ -1,33 +1,32 @@
 ;; This contract implements the SIP-010 community-standard Fungible Token trait.
 (impl-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
-;; Define the FT – internal name changed to bradley-token
-(define-fungible-token bradley-token u1000000000000000)  ;; max supply = 1,000,000 tokens × 10^6
+;; Define the FT  internal name bradley-token
+(define-fungible-token bradley-token u210000000000000000 )  ;; max supply = 210,000,000 tokens times 10^6 units
 
-;; ────────────────────────────────────────────────
+
 ;; Errors
-;; ────────────────────────────────────────────────
+
 (define-constant ERR_OWNER_ONLY          (err u100))
 (define-constant ERR_NOT_TOKEN_OWNER     (err u101))
 (define-constant ERR_INVALID_AMOUNT      (err u102))
 (define-constant ERR_MAX_SUPPLY_REACHED  (err u103))
 (define-constant ERR_PAYMENT_FAILED      (err u104))
 
-;; ────────────────────────────────────────────────
+
 ;; Constants
-;; ────────────────────────────────────────────────
-(define-constant CONTRACT_OWNER   tx-sender)
-(define-constant TOKEN_URI        u"https://hiro.so")   ;; change to your real metadata URL later
-(define-constant TOKEN_NAME       "Bradley Token")
+
+(define-constant CONTRACT_OWNER   'SPGDS0Y17973EN5TCHNHGJJ9B31XWQ5YX8A36C9B)
+(define-constant TOKEN_URI        u"https://blue-lazy-bat-855.mypinata.cloud/ipfs/bafkreiheh6kb7jneke34ytqluttdzsfmoadgyjs6bc74aofxcbtel3isp4")   ;;  hosted metadata URL
+(define-constant TOKEN_NAME       "Bradley")
 (define-constant TOKEN_SYMBOL     "sBC")
 (define-constant TOKEN_DECIMALS   u6)
 
-(define-constant MINT_PRICE_PER_UNIT   u1000000)         ;; 1 STX = 1,000,000 microSTX → 1 full token
-(define-constant MAX_SUPPLY_UNITS      u1000000000000000) ;; 1,000,000 tokens × 10^6
+(define-constant MINT_PRICE_PER_UNIT   u1)         ;; 1 microSTX per token unit  1 STX for 1 full token (1,000,000 units)
+(define-constant MAX_SUPPLY_UNITS      u210000000000000000) ;; 210,000,000,000 tokens times 10^6 units
 
-;; ────────────────────────────────────────────────
 ;; Read-only SIP-010 functions
-;; ────────────────────────────────────────────────
+
 
 (define-read-only (get-balance (who principal))
   (ok (ft-get-balance bradley-token who)))
@@ -47,11 +46,11 @@
 (define-read-only (get-token-uri)
   (ok (some TOKEN_URI)))
 
-;; ────────────────────────────────────────────────
-;; Public functions
-;; ────────────────────────────────────────────────
 
-;; Anyone can mint – but must pay 1 STX per full token (pro-rated)
+;; Public functions
+
+
+;; Anyone can mint  but must pay 1 STX per full token (pro rated by amount)
 (define-public (mint (amount uint) (recipient principal))
   (let
     (
@@ -72,7 +71,7 @@
   )
 )
 
-;; Standard SIP-010 transfer (unchanged)
+;; Standard SIP-010 transfer
 (define-public (transfer
     (amount uint)
     (sender principal)
@@ -86,3 +85,4 @@
       to-print (print to-print)
       0x)
     (ok true)))
+
