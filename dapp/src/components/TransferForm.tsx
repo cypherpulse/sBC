@@ -9,7 +9,7 @@ import {
   parseTokenAmount,
 } from "@/utils/stacks";
 import { request } from "@stacks/connect";
-import { Cl } from "@stacks/transactions";
+import { Cl, Pc } from "@stacks/transactions";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export function TransferForm() {
@@ -34,6 +34,12 @@ export function TransferForm() {
         ? Cl.some(Cl.buffer(new TextEncoder().encode(memo.slice(0, 34))))
         : Cl.none();
 
+      // Post-condition: User transfers exactly 'parsedAmount' of the fungible token
+      const ftPostCondition = Pc
+        .principal(address)
+        .willSendEq(parsedAmount)
+        .ft(`${CONTRACT_ADDRESS}.${CONTRACT_NAME}`, "bradley-token");
+
       const response = await request("stx_callContract", {
         contract: `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`,
         functionName: "transfer",
@@ -43,6 +49,7 @@ export function TransferForm() {
           Cl.principal(recipient),
           memoArg,
         ],
+        postConditions: [ftPostCondition],
         network: "mainnet",
       });
 
@@ -122,9 +129,9 @@ export function TransferForm() {
           </div>
         )}
         {status === "success" && (
-          <div className="flex items-start gap-2 text-sm text-success">
+          <div className="flex items-start gap-2 text-sm text-success bg-success/10 p-3 rounded-lg border border-success/20">
             <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-            {message}
+            <p className="break-all">{message}</p>
           </div>
         )}
       </div>

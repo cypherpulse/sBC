@@ -48,18 +48,14 @@ export default function Transactions() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: i * 0.03 }}
-                    className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors"
+                    className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer group"
+                    onClick={() => window.open(`${EXPLORER_URL}/txid/${tx.tx_id}?chain=mainnet`, '_blank')}
                   >
                     <td className="p-4 font-mono">
-                      <a
-                        href={`${EXPLORER_URL}/txid/${tx.tx_id}?chain=mainnet`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline inline-flex items-center gap-1"
-                      >
+                      <span className="text-primary group-hover:underline inline-flex items-center gap-1">
                         {shortenAddress(tx.tx_id)}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
+                        <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      </span>
                     </td>
                     <td className="p-4">
                       <span className="px-2 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium">

@@ -145,6 +145,12 @@ export function DeployerDashboard({ decimals }: DeployerDashboardProps) {
       icon: DollarSign,
       color: "text-yellow-500",
     },
+    {
+      label: "Total Mint Revenue",
+      value: metrics?.totalMintRevenue || "0 STX",
+      icon: Coins,
+      color: "text-emerald-500",
+    },
   ];
 
   return (

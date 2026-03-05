@@ -8,9 +8,9 @@ import { useState } from "react";
 
 const navItems = [
   { label: "Home", path: "/" },
+  { label: "Mint", path: "/interact" },
   { label: "Stats", path: "/stats" },
   { label: "Transactions", path: "/transactions" },
-  { label: "Interact", path: "/interact" },
 ];
 
 export function Header() {
@@ -23,7 +23,7 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <SbcLogo size={36} />
-          <span className="text-lg font-bold gradient-text hidden sm:inline">Bradley Coin</span>
+          <span className="text-lg font-bold text-orange-500 hidden sm:inline">Bradley Coin</span>
         </Link>
 
         {/* Desktop nav */}

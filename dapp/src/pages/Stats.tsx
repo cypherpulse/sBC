@@ -12,6 +12,7 @@ import {
 } from "@/utils/stacks";
 import { useWallet } from "@/contexts/WalletContext";
 import { DeployerDashboard } from "@/components/DeployerDashboard";
+import { useToast } from "@/hooks/use-toast";
 import {
   Loader2,
   Coins,
@@ -22,6 +23,10 @@ import {
   ExternalLink,
   FileCode,
   Wallet,
+  Info,
+  Tag,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -31,8 +36,22 @@ export default function Stats() {
   const [balance, setBalance] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const isOwner = isDeployer(address);
+
+  const copyAddress = () => {
+    if (address) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      toast({
+        title: "Address Copied",
+        description: "Wallet address copied to clipboard",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -70,8 +89,13 @@ export default function Stats() {
     { label: "Symbol", value: stats?.symbol || "—", icon: Hash },
     { label: "Decimals", value: stats?.decimals?.toString() || "—", icon: Coins },
     {
-      label: "Total Supply",
+      label: "Current Supply",
       value: stats ? formatTokenAmount(stats.totalSupply, stats.decimals) + " sBC" : "—",
+      icon: Coins,
+    },
+    {
+      label: "Max Supply",
+      value: "210,000,000,000 sBC",
       icon: Coins,
     },
   ];
@@ -80,7 +104,7 @@ export default function Stats() {
     <div className="container py-12">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-bold gradient-text">Token Stats</h1>
+          <h1 className="text-3xl font-bold text-orange-500">Token Stats</h1>
           <a
             href={`${EXPLORER_URL}/address/${CONTRACT_ADDRESS}.${CONTRACT_NAME}?chain=mainnet`}
             target="_blank"
@@ -97,20 +121,22 @@ export default function Stats() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 mb-8 rounded-xl bg-secondary/50 border border-border"
+          className="p-4 mb-8 rounded-xl bg-secondary/50 border border-border overflow-hidden"
         >
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-            <div>
-              <span className="text-muted-foreground">Contract: </span>
-              <code className="text-primary font-mono">{CONTRACT_NAME}</code>
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-4 sm:gap-x-8 text-sm">
+            <div className="flex flex-col sm:block">
+              <span className="text-muted-foreground mr-2">Contract:</span>
+              <code className="text-primary font-mono bg-background/50 px-2 py-1 rounded">{CONTRACT_NAME}</code>
             </div>
-            <div>
-              <span className="text-muted-foreground">Address: </span>
-              <code className="text-xs font-mono">{CONTRACT_ADDRESS}</code>
+            <div className="flex flex-col sm:block w-full sm:w-auto overflow-hidden">
+              <span className="text-muted-foreground mr-2">Address:</span>
+              <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded block sm:inline truncate">
+                {CONTRACT_ADDRESS}
+              </code>
             </div>
-            <div>
-              <span className="text-muted-foreground">Standard: </span>
-              <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
+            <div className="flex flex-col sm:block">
+              <span className="text-muted-foreground mr-2">Standard:</span>
+              <span className="inline-flex px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium w-fit">
                 SIP-010
               </span>
             </div>
@@ -118,7 +144,7 @@ export default function Stats() {
         </motion.div>
 
         {/* Token Stats Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {statCards.map((card, i) => (
             <motion.div
               key={card.label}
@@ -136,27 +162,77 @@ export default function Stats() {
           ))}
         </div>
 
-        {/* Token URI Card */}
-        {stats?.tokenUri && (
+        {/* Token Metadata Card */}
+        {stats?.metadata && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-5 rounded-xl bg-card border border-border card-shadow mb-8"
+            className="p-6 rounded-xl bg-card border border-border card-shadow mb-8 overflow-hidden"
           >
-            <div className="flex items-center gap-3 mb-2">
-              <LinkIcon className="h-5 w-5 text-primary" />
-              <span className="text-sm text-muted-foreground">Token URI (Metadata)</span>
+            <div className="flex flex-col lg:flex-row gap-8">
+              {stats.metadata.image && (
+                <div className="w-full max-w-sm mx-auto lg:w-1/3 flex-shrink-0">
+                  <div className="aspect-square relative rounded-xl overflow-hidden bg-secondary/30 border border-border shadow-sm">
+                    <img
+                      src={stats.metadata.image}
+                      alt={stats.metadata.name}
+                      className="object-cover w-full h-full hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="flex-1 space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold mb-2 flex items-center gap-2">
+                    {stats.metadata.name}
+                    <span className="text-sm font-normal px-2 py-1 rounded-full bg-primary/10 text-primary">
+                      {stats.symbol}
+                    </span>
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {stats.metadata.description}
+                  </p>
+                </div>
+
+                {stats.metadata.attributes && stats.metadata.attributes.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2 text-muted-foreground">
+                      <Tag className="h-4 w-4" />
+                      Attributes
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {stats.metadata.attributes.map((attr, i) => (
+                        <div key={i} className="p-3 rounded-lg bg-secondary/50 border border-border/50">
+                          <span className="text-xs text-muted-foreground block mb-1">
+                            {attr.trait_type}
+                          </span>
+                          <span className="font-medium">
+                            {attr.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {stats.tokenUri && (
+                  <div className="pt-4 border-t border-border">
+                    <a
+                      href={stats.tokenUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"
+                    >
+                      <LinkIcon className="h-3 w-3" />
+                      View Raw Metadata
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
-            <a
-              href={stats.tokenUri}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline break-all inline-flex items-center gap-1"
-            >
-              {stats.tokenUri}
-              <ExternalLink className="h-3 w-3 shrink-0" />
-            </a>
           </motion.div>
         )}
 
@@ -166,7 +242,7 @@ export default function Stats() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 rounded-xl bg-card border border-primary/20 glow-orange mb-8"
+            className="p-6 rounded-xl bg-card border border-primary/20 glow-orange mb-8 overflow-hidden"
           >
             <div className="flex items-center gap-3 mb-2">
               <User className="h-5 w-5 text-primary" />
@@ -177,12 +253,24 @@ export default function Stats() {
                 </span>
               )}
             </div>
-            <p className="text-3xl font-bold">
+            <p className="text-3xl font-bold truncate">
               {balance !== null
                 ? formatTokenAmount(balance, stats?.decimals || 6) + " sBC"
                 : "Loading..."}
             </p>
-            <p className="text-xs text-muted-foreground font-mono mt-2">{address}</p>
+            <div className="flex items-center gap-2 mt-2 max-w-full">
+              <p className="text-xs text-muted-foreground font-mono truncate max-w-[calc(100%-2rem)]">
+                {address}
+              </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+                onClick={copyAddress}
+              >
+                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+              </Button>
+            </div>
           </motion.div>
         ) : (
           <motion.div

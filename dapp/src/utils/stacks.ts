@@ -21,12 +21,24 @@ export const EXPLORER_URL = import.meta.env.VITE_EXPLORER_URL;
 // Deployer address for admin features
 export const DEPLOYER_ADDRESS = CONTRACT_ADDRESS;
 
+export interface TokenMetadata {
+  name: string;
+  description: string;
+  image: string;
+  attributes: Array<{ trait_type: string; value: string }>;
+  properties?: {
+    category: string;
+    creators: Array<{ address: string; share: number }>;
+  };
+}
+
 export interface TokenStats {
   name: string;
   symbol: string;
   decimals: number;
   totalSupply: string;
   tokenUri: string | null;
+  metadata?: TokenMetadata | null;
 }
 
 function hexFromBytes(bytes: Uint8Array): string {
@@ -45,7 +57,25 @@ function bytesFromHex(hex: string): Uint8Array {
 function parseCvHex(hex: string): any {
   const bytes = bytesFromHex(hex);
   const cv = cvToJSON(deserializeCV(bytes));
-  return cv.value?.value ?? cv.value;
+  
+  // Recursive function to unwrap Clarity values
+  const unwrap = (val: any): any => {
+    // Handle Response (ok/err) and Optional (some)
+    if (val?.type === 'success' || val?.type === 'ok' || val?.type === 'some') {
+      return unwrap(val.value);
+    }
+    // Handle common value wrappers
+    if (val?.value !== undefined && typeof val.value !== 'object') {
+      return val.value;
+    }
+    // Handle nested value objects (like in some versions of cvToJSON)
+    if (val?.value && typeof val.value === 'object') {
+      return unwrap(val.value);
+    }
+    return val;
+  };
+
+  return unwrap(cv);
 }
 
 export async function callReadOnly(functionName: string, args: ClarityValue[] = []) {
@@ -89,13 +119,25 @@ export async function getTokenStats(): Promise<TokenStats> {
       callReadOnly("get-token-uri"),
     ]);
 
-    const stats = {
+    const stats: TokenStats = {
       name: parseCvHex(nameRes.result) || "bradley coin",
       symbol: parseCvHex(symbolRes.result) || "sBC",
       decimals: parseInt(parseCvHex(decimalsRes.result) || "6"),
       totalSupply: parseCvHex(supplyRes.result) || "0",
       tokenUri: parseCvHex(uriRes.result) || null,
+      metadata: null,
     };
+
+    if (stats.tokenUri) {
+      try {
+        const metadataRes = await fetch(stats.tokenUri);
+        if (metadataRes.ok) {
+          stats.metadata = await metadataRes.json();
+        }
+      } catch (e) {
+        console.warn("Failed to fetch token metadata:", e);
+      }
+    }
 
     console.log("Token stats fetched:", stats);
     return stats;
@@ -148,7 +190,7 @@ export async function getRecentTransactions(): Promise<Transaction[]> {
 
   try {
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/address/${CONTRACT_ADDRESS}.${CONTRACT_NAME}/transactions?limit=20`
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=20`
     );
     console.log("Transaction API response status:", res.status);
 
@@ -181,6 +223,7 @@ export interface ContractMetrics {
   uniqueHolders: number;
   averageFee: string;
   totalFees: string;
+  totalMintRevenue: string;
 }
 
 export interface TokenHolder {
@@ -192,14 +235,15 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
   try {
     // Get all contract transactions
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/address/${CONTRACT_ADDRESS}.${CONTRACT_NAME}/transactions?limit=50`
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=50`
     );
     const data = await res.json();
-    const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call");
+    const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call" && tx.tx_status === "success");
     
     let mintCount = 0;
     let transferCount = 0;
-    let totalFees = BigInt(0);
+    let totalFees = BigInt(0); // Network fees
+    let totalMintRevenue = BigInt(0); // STX collected from minting
     const holders = new Set<string>();
     
     for (const tx of txs) {
@@ -211,10 +255,20 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
         mintCount++;
         // Extract recipient from function args
         const recipientArg = tx.contract_call?.function_args?.find((a: any) => a.name === "recipient");
+        const amountArg = tx.contract_call?.function_args?.find((a: any) => a.name === "amount");
+        
         if (recipientArg?.repr) {
           const addr = recipientArg.repr.replace(/^'/, "");
           holders.add(addr);
         }
+
+        // Calculate revenue: amount (units) * 1 microSTX
+        if (amountArg?.repr) {
+          const amount = BigInt(amountArg.repr.replace(/^u/, ""));
+          // Revenue = amount * 1 (assuming price is 1 microSTX per unit as per contract)
+          totalMintRevenue += amount;
+        }
+
       } else if (fnName === "transfer") {
         transferCount++;
         // Extract sender and recipient
@@ -234,6 +288,7 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
       uniqueHolders: holders.size,
       averageFee: formatMicroStx(avgFee.toString()),
       totalFees: formatMicroStx(totalFees.toString()),
+      totalMintRevenue: formatMicroStx(totalMintRevenue.toString()),
     };
   } catch (e) {
     console.error("Failed to get contract metrics:", e);
@@ -244,6 +299,7 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
       uniqueHolders: 0,
       averageFee: "0",
       totalFees: "0",
+      totalMintRevenue: "0 STX",
     };
   }
 }
@@ -256,16 +312,52 @@ export function formatMicroStx(microStx: string): string {
 
 export async function getTokenHolders(): Promise<TokenHolder[]> {
   try {
-    // Get FT holders from the API
+    // Fetch transactions to extract holders
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tokens/ft/${CONTRACT_ADDRESS}.${CONTRACT_NAME}::bradley-token/holders?limit=20`
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=100`
     );
     const data = await res.json();
+    const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call");
     
-    return (data.results || []).map((h: any) => ({
-      address: h.address,
-      balance: h.balance || "0",
-    }));
+    const holders = new Map<string, bigint>();
+    
+    for (const tx of txs) {
+      const fnName = tx.contract_call?.function_name;
+      
+      if (fnName === "mint") {
+        const recipientArg = tx.contract_call?.function_args?.find((a: any) => a.name === "recipient");
+        const amountArg = tx.contract_call?.function_args?.find((a: any) => a.name === "amount");
+        if (recipientArg?.repr && amountArg?.repr) {
+          const addr = recipientArg.repr.replace(/^'/, "");
+          const amount = BigInt(amountArg.repr.replace(/^u/, ""));
+          holders.set(addr, (holders.get(addr) || BigInt(0)) + amount);
+        }
+      } else if (fnName === "transfer") {
+        const senderArg = tx.contract_call?.function_args?.find((a: any) => a.name === "sender");
+        const recipientArg = tx.contract_call?.function_args?.find((a: any) => a.name === "recipient");
+        const amountArg = tx.contract_call?.function_args?.find((a: any) => a.name === "amount");
+        if (senderArg?.repr && recipientArg?.repr && amountArg?.repr) {
+          const sender = senderArg.repr.replace(/^'/, "");
+          const recipient = recipientArg.repr.replace(/^'/, "");
+          const amount = BigInt(amountArg.repr.replace(/^u/, ""));
+          holders.set(sender, (holders.get(sender) || BigInt(0)) - amount);
+          holders.set(recipient, (holders.get(recipient) || BigInt(0)) + amount);
+        }
+      }
+    }
+    
+    // Filter out zero balances and convert to array
+    const result: TokenHolder[] = [];
+    for (const [address, balance] of holders) {
+      if (balance > 0) {
+        result.push({ address, balance: balance.toString() });
+      }
+    }
+    
+    // Sort by balance descending
+    result.sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
+    
+    return result.slice(0, 20); // Return top 20 holders
   } catch (e) {
     console.error("Failed to get token holders:", e);
     return [];
