@@ -17,6 +17,16 @@ export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS;
 export const CONTRACT_NAME = import.meta.env.VITE_CONTRACT_NAME;
 export const NETWORK_URL = import.meta.env.VITE_NETWORK_URL;
 export const EXPLORER_URL = import.meta.env.VITE_EXPLORER_URL;
+const HIRO_API_KEY = import.meta.env.VITE_HIRO_API_KEY;
+
+// Helper to get headers with API key
+function getHeaders(contentType = "application/json") {
+  const headers: HeadersInit = { "Content-Type": contentType };
+  if (HIRO_API_KEY) {
+    headers["x-api-key"] = HIRO_API_KEY;
+  }
+  return headers;
+}
 
 // Deployer address for admin features
 export const DEPLOYER_ADDRESS = CONTRACT_ADDRESS;
@@ -86,11 +96,10 @@ export async function callReadOnly(functionName: string, args: ClarityValue[] = 
   });
 
   const url = `${NETWORK_URL}/v2/contracts/call-read/${CONTRACT_ADDRESS}/${CONTRACT_NAME}/${functionName}`;
-  console.log(`Calling read-only function: ${functionName}`, { url, args: serializedArgs });
 
   const response = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getHeaders(),
     body: JSON.stringify({
       sender: CONTRACT_ADDRESS,
       arguments: serializedArgs,
@@ -98,18 +107,18 @@ export async function callReadOnly(functionName: string, args: ClarityValue[] = 
   });
 
   const data = await response.json();
-  console.log(`Response for ${functionName}:`, data);
 
   if (!data.okay) {
-    console.error(`Read-only call failed for ${functionName}:`, data.cause);
+    // Only log if it's not an "UndefinedFunction" error (common for feature detection)
+    if (!data.cause?.includes("UndefinedFunction")) {
+      console.warn(`Read-only call failed for ${functionName}:`, data.cause);
+    }
     throw new Error(data.cause || `Read-only call failed for ${functionName}`);
   }
   return data;
 }
 
 export async function getTokenStats(): Promise<TokenStats> {
-  console.log("Fetching token stats for contract:", `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`);
-
   try {
     const [nameRes, symbolRes, decimalsRes, supplyRes, uriRes] = await Promise.all([
       callReadOnly("get-name"),
@@ -130,7 +139,7 @@ export async function getTokenStats(): Promise<TokenStats> {
 
     if (stats.tokenUri) {
       try {
-        const metadataRes = await fetch(stats.tokenUri);
+        const metadataRes = await fetch(stats.tokenUri); // Metadata usually public/IPFS, no API key needed unless hosted on Hiro
         if (metadataRes.ok) {
           stats.metadata = await metadataRes.json();
         }
@@ -139,7 +148,6 @@ export async function getTokenStats(): Promise<TokenStats> {
       }
     }
 
-    console.log("Token stats fetched:", stats);
     return stats;
   } catch (error) {
     console.error("Failed to fetch token stats:", error);
@@ -186,19 +194,15 @@ export interface Transaction {
 }
 
 export async function getRecentTransactions(): Promise<Transaction[]> {
-  console.log("Fetching recent transactions for contract:", `${CONTRACT_ADDRESS}.${CONTRACT_NAME}`);
-
   try {
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=20`
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=20`,
+      { headers: getHeaders() }
     );
-    console.log("Transaction API response status:", res.status);
 
     const data = await res.json();
-    console.log("Raw transaction data:", data);
 
     const filteredTxs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call");
-    console.log("Filtered contract call transactions:", filteredTxs);
 
     return filteredTxs;
   } catch (error) {
@@ -235,7 +239,8 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
   try {
     // Get all contract transactions
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=50`
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=50`,
+      { headers: getHeaders() }
     );
     const data = await res.json();
     const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call" && tx.tx_status === "success");
@@ -312,12 +317,27 @@ export function formatMicroStx(microStx: string): string {
 
 export async function getTokenHolders(): Promise<TokenHolder[]> {
   try {
-    // Fetch transactions to extract holders
+    // Try to get FT holders from the official API
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=100`
+      `${NETWORK_URL}/extended/v1/tokens/ft/${CONTRACT_ADDRESS}.${CONTRACT_NAME}::bradley-token/holders?limit=50`,
+      { headers: getHeaders() }
     );
-    const data = await res.json();
-    const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call");
+    
+    if (res.ok) {
+      const data = await res.json();
+      return (data.results || []).map((h: any) => ({
+        address: h.address,
+        balance: h.balance || "0",
+      }));
+    }
+
+    // Fallback: Fetch transactions to estimate holders (if official endpoint fails)
+    const txRes = await fetch(
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=100`,
+      { headers: getHeaders() }
+    );
+    const txData = await txRes.json();
+    const txs = (txData.results || []).filter((tx: any) => tx.tx_type === "contract_call");
     
     const holders = new Map<string, bigint>();
     
@@ -357,7 +377,7 @@ export async function getTokenHolders(): Promise<TokenHolder[]> {
     // Sort by balance descending
     result.sort((a, b) => Number(BigInt(b.balance) - BigInt(a.balance)));
     
-    return result.slice(0, 20); // Return top 20 holders
+    return result;
   } catch (e) {
     console.error("Failed to get token holders:", e);
     return [];

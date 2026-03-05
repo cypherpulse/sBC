@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_CONTRACT_NAME: string;
   readonly VITE_NETWORK_URL: string;
   readonly VITE_EXPLORER_URL: string;
+  readonly VITE_HIRO_API_KEY: string;
 }
 
 interface ImportMeta {

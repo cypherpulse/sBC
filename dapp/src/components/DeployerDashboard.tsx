@@ -85,6 +85,7 @@ export function DeployerDashboard({ decimals }: DeployerDashboardProps) {
   const [metrics, setMetrics] = useState<ContractMetrics | null>(null);
   const [holders, setHolders] = useState<TokenHolder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllHolders, setShowAllHolders] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -107,6 +108,8 @@ export function DeployerDashboard({ decimals }: DeployerDashboardProps) {
       </div>
     );
   }
+
+  const displayedHolders = showAllHolders ? holders : holders.slice(0, 5);
 
   const metricCards = [
     {
@@ -217,7 +220,7 @@ export function DeployerDashboard({ decimals }: DeployerDashboardProps) {
                 </tr>
               </thead>
               <tbody>
-                {holders.map((holder, i) => (
+                {displayedHolders.map((holder, i) => (
                   <motion.tr
                     key={holder.address}
                     initial={{ opacity: 0 }}
@@ -244,6 +247,17 @@ export function DeployerDashboard({ decimals }: DeployerDashboardProps) {
                 ))}
               </tbody>
             </table>
+            
+            {holders.length > 5 && (
+              <div className="p-2 border-t border-border bg-secondary/20 text-center">
+                <button
+                  onClick={() => setShowAllHolders(!showAllHolders)}
+                  className="text-sm text-primary hover:underline font-medium py-2 px-4 rounded-lg hover:bg-secondary/50 transition-colors"
+                >
+                  {showAllHolders ? "Show Less" : `Show All (${holders.length})`}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
