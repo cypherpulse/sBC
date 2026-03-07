@@ -10,7 +10,7 @@ export function Footer() {
           <div className="flex items-center gap-3">
             <SbcLogo size={28} />
             <span className="text-sm text-muted-foreground">
-              Bradley Coin (sBC) — Built on Stacks
+              sBC — Built on Stacks
             </span>
           </div>
           <div className="flex items-center gap-6">

@@ -54,7 +54,7 @@ export default function Interact() {
           </motion.div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-orange-500">Token Management</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Manage your Bradley Coin ecosystem. Mint new tokens to grow your balance or transfer value instantly to anyone on Stacks.
+            Manage your sBC ecosystem. Mint new tokens to grow your balance or transfer value instantly to anyone on Stacks.
           </p>
         </div>
 

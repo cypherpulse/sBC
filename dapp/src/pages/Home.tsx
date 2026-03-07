@@ -70,7 +70,7 @@ export default function Home() {
               <div className="absolute inset-0 z-0">
                 <img 
                   src="https://res.cloudinary.com/dg5rr4ntw/image/upload/v1772739178/photo_2026-03-05_22-32-31_urdzf5.jpg" 
-                  alt="Bradley Coin Background" 
+                  alt="sBC Background" 
                   className="w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
@@ -87,7 +87,7 @@ export default function Home() {
 
                 <div className="space-y-4">
                   <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-                    <span className="text-orange-500">Bradley Coin</span>
+                    <span className="text-orange-500">sBC</span>
                   </h1>
                   <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
                     A fungible token on the Stacks blockchain. Transfer, mint, and manage your sBC tokens with this decentralized application.
@@ -204,7 +204,7 @@ export default function Home() {
       <section className="py-16 border-t border-border bg-secondary/20">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Bradley Coin?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why sBC?</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Built on Stacks, secured by Bitcoin. Experience the future of decentralized finance.
             </p>

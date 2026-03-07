@@ -10,6 +10,7 @@ const navItems = [
   { label: "Home", path: "/" },
   { label: "Mint", path: "/interact" },
   { label: "Stats", path: "/stats" },
+  { label: "Analysis", path: "/analysis" },
   { label: "Transactions", path: "/transactions" },
 ];
 
@@ -23,7 +24,7 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <SbcLogo size={36} />
-          <span className="text-lg font-bold text-orange-500 hidden sm:inline">Bradley Coin</span>
+          <span className="text-lg font-bold text-orange-500 hidden sm:inline">sBC</span>
         </Link>
 
         {/* Desktop nav */}

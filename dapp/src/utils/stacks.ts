@@ -193,10 +193,10 @@ export interface Transaction {
   };
 }
 
-export async function getRecentTransactions(): Promise<Transaction[]> {
+export async function getRecentTransactions(limit = 20, offset = 0): Promise<Transaction[]> {
   try {
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=20`,
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=${limit}&offset=${offset}`,
       { headers: getHeaders() }
     );
 
@@ -228,6 +228,8 @@ export interface ContractMetrics {
   averageFee: string;
   totalFees: string;
   totalMintRevenue: string;
+  txsLast24h: number;
+  feesLast24h: string;
 }
 
 export interface TokenHolder {
@@ -235,26 +237,68 @@ export interface TokenHolder {
   balance: string;
 }
 
+// Helper to fetch multiple pages of transactions
+async function fetchAllTransactions(limit: number = 10000): Promise<any[]> {
+  const allTxs: any[] = [];
+  let offset = 0;
+  const pageSize = 50; // Max per request
+
+  try {
+    while (allTxs.length < limit) {
+      const res = await fetch(
+        `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=${pageSize}&offset=${offset}`,
+        { headers: getHeaders() }
+      );
+      const data = await res.json();
+      const newTxs = data.results || [];
+      
+      if (newTxs.length === 0) break;
+      
+      allTxs.push(...newTxs);
+      offset += pageSize;
+      
+      if (newTxs.length < pageSize) break; // No more data
+      
+      // Safety break to prevent infinite loops or excessive API usage if limit is huge
+      // 200 requests * 50 = 10,000 txs.
+      if (offset >= 10000) break; 
+    }
+  } catch (e) {
+    console.error("Error fetching transaction history:", e);
+  }
+  
+  return allTxs;
+}
+
 export async function getContractMetrics(): Promise<ContractMetrics> {
   try {
-    // Get all contract transactions
-    const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=50`,
-      { headers: getHeaders() }
-    );
-    const data = await res.json();
-    const txs = (data.results || []).filter((tx: any) => tx.tx_type === "contract_call" && tx.tx_status === "success");
+    // Get larger history of contract transactions for better metrics
+    const rawTxs = await fetchAllTransactions(10000);
+    const txs = rawTxs.filter((tx: any) => tx.tx_type === "contract_call" && tx.tx_status === "success");
     
     let mintCount = 0;
     let transferCount = 0;
     let totalFees = BigInt(0); // Network fees
     let totalMintRevenue = BigInt(0); // STX collected from minting
+    let txsLast24h = 0;
+    let feesLast24h = BigInt(0);
     const holders = new Set<string>();
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
     
     for (const tx of txs) {
       const fnName = tx.contract_call?.function_name;
       const fee = BigInt(tx.fee_rate || 0);
       totalFees += fee;
+
+      // Check for 24h stats
+      // Note: API returns burn_block_time_iso or burn_block_time (unix timestamp in seconds)
+      // fetchAllTransactions returns raw tx objects which usually have burn_block_time (seconds)
+      const txTime = tx.burn_block_time ? tx.burn_block_time * 1000 : (tx.burn_block_time_iso ? new Date(tx.burn_block_time_iso).getTime() : 0);
+      
+      if (txTime > oneDayAgo) {
+        txsLast24h++;
+        feesLast24h += fee;
+      }
       
       if (fnName === "mint") {
         mintCount++;
@@ -294,6 +338,8 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
       averageFee: formatMicroStx(avgFee.toString()),
       totalFees: formatMicroStx(totalFees.toString()),
       totalMintRevenue: formatMicroStx(totalMintRevenue.toString()),
+      txsLast24h,
+      feesLast24h: formatMicroStx(feesLast24h.toString()),
     };
   } catch (e) {
     console.error("Failed to get contract metrics:", e);
@@ -305,6 +351,8 @@ export async function getContractMetrics(): Promise<ContractMetrics> {
       averageFee: "0",
       totalFees: "0",
       totalMintRevenue: "0 STX",
+      txsLast24h: 0,
+      feesLast24h: "0 STX",
     };
   }
 }
@@ -319,7 +367,7 @@ export async function getTokenHolders(): Promise<TokenHolder[]> {
   try {
     // Try to get FT holders from the official API
     const res = await fetch(
-      `${NETWORK_URL}/extended/v1/tokens/ft/${CONTRACT_ADDRESS}.${CONTRACT_NAME}::bradley-token/holders?limit=50`,
+      `${NETWORK_URL}/extended/v1/tokens/ft/${CONTRACT_ADDRESS}.${CONTRACT_NAME}::bradley-token/holders?limit=200`,
       { headers: getHeaders() }
     );
     
@@ -333,7 +381,7 @@ export async function getTokenHolders(): Promise<TokenHolder[]> {
 
     // Fallback: Fetch transactions to estimate holders (if official endpoint fails)
     const txRes = await fetch(
-      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=100`,
+      `${NETWORK_URL}/extended/v1/tx/?contract_id=${CONTRACT_ADDRESS}.${CONTRACT_NAME}&limit=50`,
       { headers: getHeaders() }
     );
     const txData = await txRes.json();

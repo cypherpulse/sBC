@@ -13,7 +13,9 @@ const Home = lazy(() => import("./pages/Home"));
 const Stats = lazy(() => import("./pages/Stats"));
 const Transactions = lazy(() => import("./pages/Transactions"));
 const Interact = lazy(() => import("./pages/Interact"));
+const Analysis = lazy(() => import("./pages/Analysis"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Home />} />
                   <Route path="/stats" element={<Stats />} />
+                  <Route path="/analysis" element={<Analysis />} />
                   <Route path="/transactions" element={<Transactions />} />
                   <Route path="/interact" element={<Interact />} />
                   <Route path="*" element={<NotFound />} />
