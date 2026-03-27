@@ -30,6 +30,7 @@ import {
   Globe, 
   Target 
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const COLORS = ['#FF6600', '#00CC66', '#3b82f6', '#a855f7', '#eab308'];
 
@@ -202,7 +203,13 @@ export default function Analysis() {
               </span>
             </div>
             <div className="relative z-10">
-              <div className="text-3xl font-bold mb-1 tracking-tight truncate" title={stat.value}>{stat.value}</div>
+              <div className="text-3xl font-bold mb-1 tracking-tight truncate flex items-center h-9" title={stat.value}>
+                {loading ? (
+                  <Skeleton className="h-8 w-24 bg-background/30" />
+                ) : (
+                  stat.value
+                )}
+              </div>
               <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
               <div className="text-xs text-muted-foreground/60 mt-1 flex items-center gap-1">
                 <span className="w-1 h-1 rounded-full bg-current opacity-50" />
@@ -310,7 +317,11 @@ export default function Analysis() {
             
             {/* Center Text Overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-3xl font-bold">{holders.length}</span>
+              {loading ? (
+                <Skeleton className="h-10 w-16 mb-1 rounded-lg" />
+              ) : (
+                <span className="text-3xl font-bold">{holders.length}</span>
+              )}
               <span className="text-xs text-muted-foreground uppercase tracking-widest">Holders</span>
             </div>
           </div>

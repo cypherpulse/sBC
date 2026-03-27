@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getTokenStats, getContractMetrics, formatTokenAmount, type TokenStats, type ContractMetrics } from "@/utils/stacks";
 import { LiveTransactionTicker } from "@/components/LiveTransactionTicker";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Number Counter Component
 function AnimatedNumber({ value }: { value: number }) {
@@ -133,10 +134,12 @@ export default function Home() {
                     <Users className="h-5 w-5 text-blue-500" />
                     <span className="text-sm font-medium">Holders</span>
                   </div>
-                  <div className="text-3xl font-bold text-foreground">
+                  <div className="text-3xl font-bold text-foreground flex items-center h-9">
                     {metrics ? (
                       <AnimatedNumber value={metrics.uniqueHolders} />
-                    ) : "—"}
+                    ) : (
+                      <Skeleton className="h-8 w-16" />
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">Unique addresses</div>
                 </motion.div>
@@ -150,8 +153,10 @@ export default function Home() {
                     <Coins className="h-5 w-5 text-primary" />
                     <span className="text-sm font-medium">Circulating Supply</span>
                   </div>
-                  <div className="text-2xl font-bold text-foreground truncate" title={tokenStats ? formatTokenAmount(tokenStats.totalSupply, tokenStats.decimals) : ""}>
-                    {tokenStats ? formatTokenAmount(tokenStats.totalSupply, tokenStats.decimals) : "—"}
+                  <div className="text-2xl font-bold text-foreground truncate flex items-center h-8" title={tokenStats ? formatTokenAmount(tokenStats.totalSupply, tokenStats.decimals) : ""}>
+                    {tokenStats ? formatTokenAmount(tokenStats.totalSupply, tokenStats.decimals) : (
+                      <Skeleton className="h-7 w-24" />
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">sBC Minted</div>
                 </motion.div>
@@ -165,7 +170,7 @@ export default function Home() {
                     <Database className="h-5 w-5 text-purple-500" />
                     <span className="text-sm font-medium">Max Supply</span>
                   </div>
-                  <div className="text-2xl font-bold text-foreground">
+                  <div className="text-2xl font-bold text-foreground flex items-center h-8">
                     210B
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">Total Cap</div>
@@ -180,10 +185,12 @@ export default function Home() {
                     <Activity className="h-5 w-5 text-green-500" />
                     <span className="text-sm font-medium">Transactions</span>
                   </div>
-                  <div className="text-3xl font-bold text-foreground">
+                  <div className="text-3xl font-bold text-foreground flex items-center h-9">
                     {metrics ? (
                       <AnimatedNumber value={metrics.totalTransactions} />
-                    ) : "—"}
+                    ) : (
+                      <Skeleton className="h-8 w-16" />
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">Total interactions</div>
                 </motion.div>
